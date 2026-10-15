@@ -1,0 +1,17 @@
+{
+  "name": "hot-or-not-jev-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "mock": "node mock-server.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "marked": "^15.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
+  }
+}
