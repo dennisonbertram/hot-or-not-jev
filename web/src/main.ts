@@ -89,6 +89,7 @@ async function judge() {
     if (res.status === 429) return fail("Jev needs a breather", `Too many people want a verdict right now. Try again in ${friendlyWait(res.headers.get("Retry-After"))}.`);
     if (res.status === 413) return fail("That's a big file", "One photo is over 15 MB. Remove it or use a smaller copy.");
     if (res.status === 400) return fail("Jev can't read that", err ?? "Jev needs 2 to 10 photos he can open. Check your picks and try again.");
+    if (res.status === 503) return fail("Jev is busy", "Jev is judging other people's photos right now. Try again in a few seconds.");
     if (res.status === 502) return fail("Jev fumbled it", "The judging service had a problem. It's not your photos. Try again in a moment.");
     return fail("Something went wrong", err ?? `The API answered with status ${res.status}.`);
   } finally { clearInterval(timer); }

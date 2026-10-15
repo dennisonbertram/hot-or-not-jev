@@ -120,6 +120,7 @@ Every error uses this shape:
 | 400 | `bad_request` | Fewer than 2 or more than 10 photos, or a file that cannot be read as an image. |
 | 413 | `too_large` | A file is over 15 MB. |
 | 429 | `rate_limited` | Per-IP hourly limit or global daily cap reached. Includes `Retry-After`. |
+| 503 | `busy` | Jev is already judging 3 batches. Includes `Retry-After: 5`; does not use your quota. |
 | 502 | `upstream_error` | The TypeSafe call failed. Try again later. |
 
 The `message` text above is an example. Branch on `code`, not on `message`.

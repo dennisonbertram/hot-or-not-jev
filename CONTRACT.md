@@ -61,6 +61,8 @@ Errors (JSON `{"error": {"code": "...", "message": "..."}}`):
 - `413 too_large`: file over 15 MB.
 - `429 rate_limited`: per-IP limit (`RATE_LIMIT_PER_IP_PER_HOUR`, default 20)
   or global daily cap (`DAILY_REQUEST_CAP`, default 500); includes `Retry-After`.
+- `503 busy`: `MAX_CONCURRENT_BATCHES` (default 3) batches already in progress;
+  `Retry-After: 5`; checked before the body is read; uses no quota.
 - `502 upstream_error`: TypeSafe failed.
 
 CORS: allow `ALLOWED_ORIGINS` (comma list; default the Pages origin and localhost).
