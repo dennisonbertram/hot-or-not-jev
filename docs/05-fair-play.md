@@ -4,7 +4,7 @@
 
 - Photos are judged in memory. They are not saved to disk and not logged.
 - The server resizes each photo, sends it to TypeSafe for judging, returns the result, and drops it.
-- What TypeSafe does with requests on its side is governed by TypeSafe's own terms. We have not documented that here: TBD.
+- What TypeSafe does with requests on its side is governed by TypeSafe's own terms. TypeSafe's Jev 1.14 announcement says it does not train on API queries (https://typesafe.ai/blog/jev-1-14).
 
 ## Disclaimers
 
