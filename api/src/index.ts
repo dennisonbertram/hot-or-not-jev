@@ -14,6 +14,7 @@ const app = createApp({
   limiter: new RateLimiter(Number(process.env.RATE_LIMIT_PER_IP_PER_HOUR ?? 20), Number(process.env.DAILY_REQUEST_CAP ?? 500)),
   allowedOrigins: (process.env.ALLOWED_ORIGINS ?? "https://dennisonbertram.github.io,http://localhost:5173").split(",").map((s) => s.trim()),
   prepare,
+  maxConcurrent: Number(process.env.MAX_CONCURRENT_BATCHES ?? 3),
   rank: (jpegs, names) => rankPhotos(key, model, jpegs, names),
 });
 const port = Number(process.env.PORT ?? 8787);

@@ -26,8 +26,6 @@ export function pickLead(photos: PhotoAnswers[]): number {
   return (withPerson.length ? withPerson : all).sort(byScore(photos))[0];
 }
 
-const r2 = (n: number) => Math.round(n * 100) / 100;
-
 /** `same` maps photo index to the same-person probability; the lead has no entry. */
 export function assemble(photos: PhotoAnswers[], filenames: string[], lead: number, same: Map<number, number>) {
   const out = photos.map((p, index) => {
@@ -37,7 +35,7 @@ export function assemble(photos: PhotoAnswers[], filenames: string[], lead: numb
     if (p.people === "none") flags.push("no_person");
     if (p.people === "several") flags.push("group");
     if (p.faceHidden > 0.5) flags.push("face_hidden");
-    return { index, filename: filenames[index], lead_score: r2(p.lead), hotness: r2(p.hotness), vibe: p.vibe, people: p.people, same_person: sp === null ? null : r2(sp), flags };
+    return { index, filename: filenames[index], lead_score: p.lead, hotness: p.hotness, vibe: p.vibe, people: p.people, same_person: sp, flags };
   });
   const demoted = (i: number) => out[i].flags.includes("not_same_person") || out[i].flags.includes("no_person");
   const cmp = byScore(photos);
@@ -53,20 +51,36 @@ export class RateLimiter {
   private perIpPerHour: number;
   private dailyCap: number;
   private now: () => number;
-  constructor(perIpPerHour: number, dailyCap: number, now: () => number = Date.now) {
+  private maxIps: number;
+  constructor(perIpPerHour: number, dailyCap: number, now: () => number = Date.now, maxIps = 10_000) {
+    this.maxIps = maxIps;
     this.perIpPerHour = perIpPerHour;
     this.dailyCap = dailyCap;
     this.now = now;
   }
 
+  get size() {
+    return this.ips.size;
+  }
+
   check(ip: string): { ok: true } | { ok: false; retryAfter: number } {
     const t = this.now();
     if (t - this.day.start >= 86_400_000) this.day = { start: t, n: 0 };
-    if (this.ips.size > 10_000) for (const [k, v] of this.ips) if (t - v.start >= 3_600_000) this.ips.delete(k);
-    let e = this.ips.get(ip);
-    if (!e || t - e.start >= 3_600_000) this.ips.set(ip, (e = { start: t, n: 0 }));
-    if (e.n >= this.perIpPerHour) return { ok: false, retryAfter: Math.ceil((e.start + 3_600_000 - t) / 1000) };
     if (this.day.n >= this.dailyCap) return { ok: false, retryAfter: Math.ceil((this.day.start + 86_400_000 - t) / 1000) };
+    if (this.ips.size >= this.maxIps) {
+      for (const [k, v] of this.ips) if (t - v.start >= 3_600_000) this.ips.delete(k);
+      // Still full: drop the oldest entries (Map keeps insertion order).
+      for (const k of this.ips.keys()) {
+        if (this.ips.size < this.maxIps) break;
+        this.ips.delete(k);
+      }
+    }
+    let e = this.ips.get(ip);
+    if (!e || t - e.start >= 3_600_000) {
+      this.ips.delete(ip); // re-insert so the Map stays ordered by window start
+      this.ips.set(ip, (e = { start: t, n: 0 }));
+    }
+    if (e.n >= this.perIpPerHour) return { ok: false, retryAfter: Math.ceil((e.start + 3_600_000 - t) / 1000) };
     e.n++;
     this.day.n++;
     return { ok: true };

@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type MiddlewareHandler } from "hono";
 import { cors } from "hono/cors";
 import { bodyLimit } from "hono/body-limit";
 import { getConnInfo } from "@hono/node-server/conninfo";
@@ -12,6 +12,7 @@ export interface Deps {
   limiter: RateLimiter;
   allowedOrigins: string[];
   prepare: (b: Buffer) => Promise<Buffer>;
+  maxConcurrent: number;
   rank: (jpegs: Buffer[], filenames: string[]) => Promise<object>;
 }
 
@@ -23,17 +24,33 @@ export function createApp(d: Deps) {
 
   app.get("/health", (c) => c.json({ ok: true, model: "jev-preview" }));
 
+  let inflight = 0;
+  // Runs before the body is read: shed load and rate-limit without buffering anything.
+  const gate: MiddlewareHandler = async (c, next) => {
+    if (inflight >= d.maxConcurrent) {
+      c.header("Retry-After", "5");
+      return err(c, 503, "busy", "Jev is busy with other photos. Try again in a few seconds.");
+    }
+    // Railway's edge sets X-Real-IP; fall back to the socket address for local runs.
+    const ip = c.req.header("x-real-ip") ?? getConnInfo(c).remote.address ?? "unknown";
+    const rl = d.limiter.check(ip);
+    if (!rl.ok) {
+      c.header("Retry-After", String(rl.retryAfter));
+      return err(c, 429, "rate_limited", "Jev needs a break. Try again later.");
+    }
+    inflight++;
+    try {
+      await next();
+    } finally {
+      inflight--;
+    }
+  };
+
   app.post(
     "/v1/lead",
+    gate,
     bodyLimit({ maxSize: MAX_PHOTOS * MAX_FILE_BYTES + 1024 * 1024, onError: (c) => err(c, 413, "too_large", "Request is too large.") }),
     async (c) => {
-      // Railway's edge sets X-Real-IP; fall back to the socket address for local runs.
-      const ip = c.req.header("x-real-ip") ?? getConnInfo(c).remote.address ?? "unknown";
-      const rl = d.limiter.check(ip);
-      if (!rl.ok) {
-        c.header("Retry-After", String(rl.retryAfter));
-        return err(c, 429, "rate_limited", "Jev needs a break. Try again later.");
-      }
       let files: File[];
       try {
         files = (await c.req.formData()).getAll("photos").filter((v): v is File => typeof v !== "string");
@@ -45,7 +62,8 @@ export function createApp(d: Deps) {
 
       let jpegs: Buffer[];
       try {
-        jpegs = await Promise.all(files.map(async (f) => d.prepare(Buffer.from(await f.arrayBuffer()))));
+        jpegs = [];
+        for (const f of files) jpegs.push(await d.prepare(Buffer.from(await f.arrayBuffer()))); // sequential to bound memory
       } catch {
         return err(c, 400, "bad_request", "One of the photos could not be read as an image.");
       }
@@ -60,6 +78,6 @@ export function createApp(d: Deps) {
   );
 
   app.notFound((c) => err(c, 404, "not_found", "Not found."));
-  app.onError((c) => err(c, 500, "internal_error", "Something went wrong."));
+  app.onError((_e, c) => err(c, 500, "internal_error", "Something went wrong."));
   return app;
 }

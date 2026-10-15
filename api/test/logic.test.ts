@@ -61,3 +61,20 @@ test("validateUpload: photo count and size", () => {
   assert.equal(validateUpload([f(1), f(15 * 1024 * 1024 + 1)])?.status, 413);
   assert.equal(validateUpload([f(1), f(15 * 1024 * 1024)]), null);
 });
+
+test("rate limiter: exhausted daily cap does not insert IPs; IP map stays bounded", () => {
+  const capped = new RateLimiter(5, 1, () => 0);
+  capped.check("a");
+  for (let i = 0; i < 50; i++) capped.check(`x${i}`);
+  assert.equal(capped.size, 1);
+  const l = new RateLimiter(5, 1_000_000, () => 0, 100);
+  for (let i = 0; i < 500; i++) l.check(`ip${i}`);
+  assert.ok(l.size <= 100);
+});
+
+test("assemble returns unrounded numbers", () => {
+  const r = assemble([ph(2.123456, 1.987654), ph(1, 1)], ["a", "b"], 0, new Map([[1, 0.499]]));
+  assert.equal(r.photos[0].lead_score, 2.123456);
+  assert.equal(r.photos[1].same_person, 0.499);
+  assert.deepEqual(r.photos[1].flags, ["not_same_person"]);
+});

@@ -29,6 +29,7 @@ npm run typecheck
 | `ALLOWED_ORIGINS` | `https://dennisonbertram.github.io,http://localhost:5173` | Comma-separated CORS origins. |
 | `RATE_LIMIT_PER_IP_PER_HOUR` | `20` | Requests per client IP per hour. |
 | `DAILY_REQUEST_CAP` | `500` | Total requests per 24 hours across all clients. |
+| `MAX_CONCURRENT_BATCHES` | `3` | Requests processed at once. Extra requests get `503 busy` with `Retry-After: 5`. |
 | `TYPESAFE_MODEL` | `jev-preview` | Model name sent to TypeSafe (Box questions need Jev 1.14). |
 
 Rate-limited requests get `429` with a `Retry-After` header. The limiter is in memory, so it works for a single instance and resets when the service restarts.
