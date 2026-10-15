@@ -36,8 +36,8 @@ function page(docs: Doc[], cur: Doc, base: string) {
   });
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(cur.title)} · Hot or Not, Jev Edition</title><meta name="color-scheme" content="light dark">
-<link rel="icon" href="${base}favicon.svg"><link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="${base}docs.css"></head><body class="docs">
-<header class="bar"><a class="logo" href="${base}">Hot or Not <b>Jev Edition</b></a><a class="pill" href="${base}">Try the app</a></header>
+<link rel="icon" href="${base}favicon.svg"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="${base}docs.css"></head><body class="docs">
+<header class="nav"><div class="nav-in"><a class="brand" href="${base}"><span class="mark" aria-hidden="true">👑</span>Hot or Not <span class="muted">Jev Edition</span></a><a class="btn" href="${base}">Try the app</a></div></header>
 <div class="layout"><nav class="side" aria-label="Docs">${nav}</nav><main class="doc">${body}</main></div></body></html>`;
 }
 
