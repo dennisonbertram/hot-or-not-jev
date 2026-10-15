@@ -57,7 +57,7 @@ async function call(key: string, model: string, state: unknown, images: Map<stri
     throw new UpstreamError("TypeSafe request failed");
   }
   if (!res.ok) {
-    console.error(`typesafe returned HTTP ${res.status}`; // status only, never the body
+    console.error(`typesafe returned HTTP ${res.status}`); // status only, never the body
     throw new UpstreamError(`TypeSafe returned ${res.status}`);
   }
   try {
