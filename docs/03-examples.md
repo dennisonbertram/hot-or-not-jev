@@ -1,11 +1,11 @@
 # Examples
 
-All examples use the base URL `https://YOUR-API-URL`. Send each photo as a part named `photos`.
+All examples use the base URL `https://api-production-2997b.up.railway.app`. Send each photo as a part named `photos`.
 
 ## curl
 
 ```sh
-curl -X POST https://YOUR-API-URL/v1/lead \
+curl -X POST https://api-production-2997b.up.railway.app/v1/lead \
   -F "photos=@beach.jpg" \
   -F "photos=@hiking.jpg" \
   -F "photos=@dinner.jpg"
@@ -14,7 +14,7 @@ curl -X POST https://YOUR-API-URL/v1/lead \
 Pretty-print and show just the lead and ranking:
 
 ```sh
-curl -s -X POST https://YOUR-API-URL/v1/lead \
+curl -s -X POST https://api-production-2997b.up.railway.app/v1/lead \
   -F "photos=@beach.jpg" -F "photos=@hiking.jpg" -F "photos=@dinner.jpg" \
   | jq '{lead, ranking, flags: [.photos[] | {filename, flags}]}'
 ```
@@ -27,7 +27,7 @@ const input = document.querySelector('input[type=file][multiple]');
 const form = new FormData();
 for (const file of input.files) form.append('photos', file);
 
-const res = await fetch('https://YOUR-API-URL/v1/lead', { method: 'POST', body: form });
+const res = await fetch('https://api-production-2997b.up.railway.app/v1/lead', { method: 'POST', body: form });
 const data = await res.json();
 
 if (!res.ok) {
@@ -55,7 +55,7 @@ for (const path of files) {
   form.append('photos', new Blob([await readFile(path)]), basename(path));
 }
 
-const res = await fetch('https://YOUR-API-URL/v1/lead', { method: 'POST', body: form });
+const res = await fetch('https://api-production-2997b.up.railway.app/v1/lead', { method: 'POST', body: form });
 const data = await res.json();
 if (!res.ok) throw new Error(`${data.error.code}: ${data.error.message}`);
 
@@ -71,7 +71,7 @@ import requests
 paths = ["beach.jpg", "hiking.jpg", "dinner.jpg"]
 files = [("photos", (p, open(p, "rb"))) for p in paths]
 
-res = requests.post("https://YOUR-API-URL/v1/lead", files=files, timeout=120)
+res = requests.post("https://api-production-2997b.up.railway.app/v1/lead", files=files, timeout=120)
 data = res.json()
 
 if not res.ok:

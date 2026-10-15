@@ -7,7 +7,7 @@ It is a public, free API with no key. It is a demo of [TypeSafe's Jev model](htt
 ## 30-second quickstart
 
 ```sh
-curl -X POST https://YOUR-API-URL/v1/lead \
+curl -X POST https://api-production-2997b.up.railway.app/v1/lead \
   -F "photos=@beach.jpg" \
   -F "photos=@hiking.jpg" \
   -F "photos=@dinner.jpg"

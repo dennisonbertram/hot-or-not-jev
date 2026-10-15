@@ -1,6 +1,6 @@
 # API reference
 
-Base URL: `https://YOUR-API-URL`
+Base URL: `https://api-production-2997b.up.railway.app`
 
 No authentication. The server holds the TypeSafe key.
 
@@ -101,7 +101,7 @@ The fractions apply to the image as the server prepared it (rotated, and resized
 | `not_same_person` | `same_person` is below 0.5. |
 | `no_person` | `people` is `none`. |
 | `group` | `people` is `several`. |
-| `face_hidden` | Jev judges the face is hidden (a Noul probability). The cutoff is TBD. |
+| `face_hidden` | Jev judges the face is hidden (a Noul probability). Flagged when that probability is above 0.5. |
 
 ### Ranking rule
 
@@ -138,7 +138,7 @@ Content-Type: application/json
 
 - Per IP: 20 requests per hour by default.
 - Global: 500 requests per day across all users by default.
-- Both are deployment settings (`RATE_LIMIT_PER_IP_PER_HOUR`, `DAILY_REQUEST_CAP`), so the live service may use different numbers. The numbers it actually uses are TBD.
+- Both are deployment settings (`RATE_LIMIT_PER_IP_PER_HOUR`, `DAILY_REQUEST_CAP`), so they can change. The live service currently uses 20 per IP per hour and 500 per day. Requests that are rejected for bad input still count.
 - A `429` carries a `Retry-After` header. Wait that long before you retry. It is sent in seconds, as HTTP specifies.
 
 ## CORS
